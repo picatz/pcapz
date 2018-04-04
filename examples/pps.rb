@@ -11,11 +11,11 @@ end
 
 begin
   counter = 0
-  Timeout::timeout(5) {
+  Timeout::timeout(1) {
     cap.packets { |packet| counter += 1 }
   }
 rescue
-  puts "#{counter/5} packets per second"
+  puts "#{counter} packets per second"
   retry
 ensure
   cap.stop! unless cap.stopped?
