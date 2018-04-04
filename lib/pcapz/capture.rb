@@ -13,7 +13,9 @@ module Pcapz
         loop do
           buffer = @file.read_nonblock(@buffer_size)
           while buffer.size > 0
-            size, hdrlen = header_decode(buffer)
+            datalen = buffer.slice(12,4).unpack('L')[0]
+            hdrlen  = buffer.slice(16,2).unpack('v')[0]
+            size    = (datalen+hdrlen) + 3 & ~3
             pkt = buffer.slice!(0,size)[hdrlen..-1] 
             yield pkt unless pkt.nil?
           end
@@ -76,13 +78,6 @@ module Pcapz
 
     def packet_size(n)
       n+3 & ~3
-    end
-
-    def header_decode(hdr)
-      datalen = hdr.slice(12,4).unpack('L')[0]
-      hdrlen  = hdr.slice(16,2).unpack('v')[0]
-      size    = packet_size(datalen+hdrlen)
-      [size, hdrlen]
     end
   end  
 end
