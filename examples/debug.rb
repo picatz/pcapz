@@ -4,6 +4,12 @@ require 'pry'
 
 cap = Pcapz.capture.new
 
+# CTRL+C Exit
+trap "SIGINT" do
+  cap.stop! unless cap.stopped?
+  exit
+end
+
 begin
   binding.pry
 ensure
