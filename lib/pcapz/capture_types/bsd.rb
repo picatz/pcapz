@@ -20,6 +20,8 @@ module Pcapz
       rescue FiberError
         @internal_buffer = nil
         retry
+      rescue Interrupt
+        exit
       rescue
         @internal_buffer = Fiber.new do
           loop do
@@ -28,8 +30,6 @@ module Pcapz
               while buffer.size > 0
                 Fiber.yield buffer.slice!(0,(((buffer.slice(12,4).unpack('L')[0])+18) + 3 & ~3))[18..-1] 
               end
-            rescue EOFError, Errno::EAGAIN
-              retry
             rescue IO::WaitReadable
               IO.select([@file])
               retry

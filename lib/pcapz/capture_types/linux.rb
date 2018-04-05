@@ -18,6 +18,8 @@ module Pcapz
       rescue IO::WaitReadable
         IO.select([@file])
         retry
+      rescue Interrupt
+        exit
       end
 
       def file
