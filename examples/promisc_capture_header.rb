@@ -10,6 +10,8 @@ trap "SIGINT" do
   exit 0
 end
 
+cap.promiscuous!
+
 begin
   cap.packets do |packet|
     puts PacketGen.parse(packet).headers.map(&:method_name).join(" ")
