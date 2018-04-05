@@ -7,6 +7,7 @@ cap = Pcapz.capture.new
 # CTRL+C Exit
 trap "SIGINT" do
   cap.stop! unless cap.stopped?
+  exit 0
 end
 
 begin
