@@ -13,6 +13,7 @@ module Pcapz
           yield next_packet
         end
       end
+
       def next_packet
         @file.recvfrom_nonblock(@buffer_size)[0]
       rescue IO::WaitReadable
@@ -44,6 +45,7 @@ module Pcapz
         @buffer_size = 65535
       rescue
         @file.close unless @file.nil? or @file.closed?
+        raise "Unable to create network listener!"
       end
     end  
   end
