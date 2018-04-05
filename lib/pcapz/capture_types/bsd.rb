@@ -73,10 +73,6 @@ module Pcapz
       rescue
         @file.close unless @file.nil? or @file.closed?
       end
-
-      def packet_size(n)
-        n+3 & ~3
-      end
     end  
   end
 end
