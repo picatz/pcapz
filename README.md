@@ -26,7 +26,7 @@ end
 
 ## Development
 
-Currently this is only implemented for macOS. 
+Currently this has only been implemented and tested on macOS and Linux.
 
 ## License
 
