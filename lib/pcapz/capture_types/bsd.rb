@@ -1,12 +1,13 @@
 module Pcapz
   module Capture
     class BSD
-      def initialize(interface = Interfacez.default)
+      def initialize(interface = Interfacez.default, **options)
         @interface       = interface
         @buffer_size     = 0
         @file            = nil
         @internal_buffer = nil
         configure_bpf_dev
+        promiscuous = options[:promiscuous] if options.key?(:promiscuous)
       end
 
       def packets
@@ -48,6 +49,30 @@ module Pcapz
 
       def stopped?
         @file.closed?
+      end
+
+      def promiscuous!
+        promiscuous = true
+      end
+
+      def promiscuous?
+        return @promiscuous || false
+      end
+
+      def promiscuous=(value)
+        if value == true or value == 1
+          if @file.ioctl(0x20004269, 1) == 0
+            @promiscuous = true
+          end
+          return true if promiscuous? 
+        elsif value == false or value == 0
+          if @file.ioctl(0x20004269, 0) == 0
+            @promiscuous = false 
+          end
+          return true unless promiscuous? 
+        else
+          raise "Unable to set promiscuous mode with #{value}"
+        end
       end
 
       private
