@@ -17,9 +17,6 @@ module Pcapz
 
       def next_packet
         @internal_buffer.resume
-      rescue FiberError
-        @internal_buffer = nil
-        retry
       rescue Interrupt
         exit
       rescue
