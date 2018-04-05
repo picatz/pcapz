@@ -24,9 +24,9 @@ cap.packets do |packet|
 end
 ```
 
-## Development
+## Supported Platforms
 
-Currently this has only been implemented and tested on macOS and Linux.
+Currently this has only been implemented/tested on macOS and Linux.
 
 ## License
 
