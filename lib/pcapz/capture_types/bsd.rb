@@ -72,6 +72,7 @@ module Pcapz
         return @file 
       rescue
         @file.close unless @file.nil? or @file.closed?
+        raise "Unable to create network listener on #{@interface}!"
       end
     end  
   end
