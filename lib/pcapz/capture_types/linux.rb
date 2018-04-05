@@ -45,7 +45,7 @@ module Pcapz
         @buffer_size = 65535
       rescue
         @file.close unless @file.nil? or @file.closed?
-        raise "Unable to create network listener!"
+        raise "Unable to create network listener on #{@interface}!"
       end
     end  
   end
