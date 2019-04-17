@@ -28,9 +28,13 @@ module Pcapz
 
       def initialize(interface = Interfacez.default, **options)
         @interface       = interface
-        @buffer_size     = 0
         @file            = nil
         @internal_buffer = nil
+        if options.key?(:buffer_size)
+          @buffer_size = options[:buffer_size] 
+        else
+          @buffer_size = 0
+        end
         configure_bpf_dev
         @promiscuous = options[:promiscuous] if options.key?(:promiscuous)
       end
@@ -103,12 +107,24 @@ module Pcapz
           end
         end
         raise "Unable to start a packet capture on any device" if @file.nil?
+        # https://github.com/c-bata/xpcap/blob/master/sniffer.c#L69
+        # The buffer must be set before the file is attached to an interface with BIOCSETIF.
+        if @buffer_size.zero?
+          buf = [0].pack('I')
+          @file.ioctl(BIOCGBLEN, buf)
+          @buffer_size = buf.unpack('i')[0] # defaults to 4096
+        else
+          @file.ioctl(BIOCSBLEN, [@buffer_size].pack('I'))
+          # just check the buffer has been correctly set
+          buf = [0].pack('I')
+          @file.ioctl(BIOCGBLEN, buf)
+          unless @buffer_size == buf.unpack('i')[0] 
+            raise "Couldn't properly se the buffer size to #{@buffer_size}, got #{buf.unpack('i')[0]}"
+          end
+        end
         @file.ioctl(BIOCSETIF, [interface].pack("a#{interface.size+1}"))
         @file.ioctl(BIOCIMMEDIATE, [1].pack('I'))
         @file.ioctl(BIOCGHDRCMPLT, [0].pack('N'))
-        buf = [0].pack('i')
-        @file.ioctl(BIOCGBLEN, buf)
-        @buffer_size = buf.unpack('i')[0]
         timeout = [5, 0].pack('LL')
         @file.ioctl(BIOCSRTIMEOUT, timeout)
         @file
