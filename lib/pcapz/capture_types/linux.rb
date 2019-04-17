@@ -13,6 +13,8 @@ module Pcapz
       SOCKADDR_LL_SIZE       = 0x0014 # sizeof(sockaddr_ll) on 64bit
       PACKET_MREQ_SIZE       = 0x0010 # sizeof(packet_mreq) on 64bit
 
+      attr_reader :file
+
       def initialize(interface = Interfacez.default)
         @interface   = interface
         @buffer_size = 0
@@ -33,10 +35,6 @@ module Pcapz
         retry
       rescue Interrupt
         exit
-      end
-
-      def file
-        @file
       end
 
       def stop!
