@@ -23,9 +23,7 @@ module Pcapz
       end
 
       def packets
-        until @file.closed?
-          yield next_packet
-        end
+        yield next_packet until @file.closed?
       end
 
       def next_packet
@@ -39,6 +37,7 @@ module Pcapz
 
       def stop!
         return nil if stopped?
+
         @file.close
         stopped?
       end
@@ -52,23 +51,20 @@ module Pcapz
       end
 
       def promiscuous?
-        return @promiscuous || false
+        @promiscuous || false
       end
+
+      TRUTHY_PROMISC_VALUES = [true, 1].freeze
+      FALESY_PROMISC_VALUES = [false, 0].freeze
 
       def promiscuous=(value)
         mreq = Interfacez.index_of(@interface).to_s.hex.chr + "\x00\x00\x00"
         mreq << [PACKET_MR_PROMISC].pack('s')
         mreq << ("\x00" * (PACKET_MREQ_SIZE - mreq.length))
-        if value == true or value == 1
-          if @file.setsockopt(SOL_PACKET, PACKET_ADD_MEMBERSHIP, mreq) == 0
-            @promiscuous = true
-          end
-          return true if promiscuous? 
-        elsif value == false or value == 0
-          if @file.setsockopt(SOL_PACKET, PACKET_DROP_MEMBERSHIP, mreq) == 0
-            @promiscuous = false
-          end
-          return true unless promiscuous? 
+        if TRUTHY_PROMISC_VALUES.include?(value)
+          @promiscuous = true if @file.setsockopt(SOL_PACKET, PACKET_ADD_MEMBERSHIP, mreq).zero?
+        elsif FALESY_PROMISC_VALUES.include?(value)
+          @promiscuous = false if @file.setsockopt(SOL_PACKET, PACKET_DROP_MEMBERSHIP, mreq).zero?
         else
           raise "Unable to set promiscuous mode with #{value}"
         end
@@ -81,10 +77,10 @@ module Pcapz
         @file.setsockopt(Socket::SOL_SOCKET, Socket::SO_BINDTODEVICE, interface)
         @file.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR, true)
         @buffer_size = 65535
-      rescue
+      rescue StandardError
         @file.close unless @file.nil? or @file.closed?
         raise "Unable to create network listener on #{@interface}!"
       end
-    end  
+    end
   end
 end
